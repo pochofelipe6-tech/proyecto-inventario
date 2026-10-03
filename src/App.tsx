@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { ArrowRight, ArrowUpRight, Box, Check, ChevronLeft, ChevronRight, CircleHelp, Cpu, Download, LayoutGrid, LogOut, Monitor, MoreHorizontal, Pencil, Plus, Search, ShieldCheck, Trash2, Users, Wrench, X } from 'lucide-react';

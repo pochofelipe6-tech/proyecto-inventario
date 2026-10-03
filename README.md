@@ -1,6 +1,6 @@
 # Nexo · Inventario de computadores
 
-Aplicación en español con React, TypeScript, Vite, Node.js, Express y Supabase (PostgreSQL + Auth). Incluye registro, inicio y cierre de sesión, tabla de usuarios, creación/edición/eliminación de computadores, asignación de responsables, búsqueda, filtros, paginación y exportación CSV.
+Aplicación en español con Next.js 16 (App Router), React, TypeScript y Supabase (PostgreSQL + Auth). Incluye registro, inicio y cierre de sesión, tabla de usuarios, creación/edición/eliminación de computadores, asignación de responsables, búsqueda, filtros, paginación y exportación CSV.
 
 ## Inicio rápido
 
@@ -11,7 +11,7 @@ npm install
 npm run dev
 ```
 
-Abre http://127.0.0.1:5173. Puedes seleccionar **Explorar demostración** sin configurar Supabase. Los datos de demostración son ficticios y sus cambios se pierden al salir o recargar. La demostración no crea cuentas ni escribe en la base de datos.
+Abre http://127.0.0.1:3000. Puedes seleccionar **Explorar demostración** sin configurar Supabase. Los datos de demostración son ficticios y sus cambios se pierden al salir o recargar. La demostración no crea cuentas ni escribe en la base de datos.
 
 ## Conectar Supabase
 
@@ -26,16 +26,15 @@ Abre http://127.0.0.1:5173. Puedes seleccionar **Explorar demostración** sin co
 4. En la configuración del proyecto de Supabase, copia la URL del proyecto y su **publishable key** (también funciona la clave pública `anon`):
 
    ```dotenv
-   VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
-   VITE_SUPABASE_PUBLISHABLE_KEY=tu-clave-publica
+   NEXT_PUBLIC_SUPABASE_URL=https://tu-proyecto.supabase.co
+   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=tu-clave-publica
    SUPABASE_URL=https://tu-proyecto.supabase.co
    SUPABASE_PUBLISHABLE_KEY=tu-clave-publica
-   PORT=3001
    ```
 
-   Las variables `VITE_` se incluyen en el navegador. Usa exclusivamente la clave pública; no uses `service_role` ni claves secretas. Las variables sin `VITE_` son para el servidor. Nunca publiques `.env`.
+   Las variables `NEXT_PUBLIC_` se incluyen en el navegador. Usa exclusivamente la clave pública; no uses `service_role` ni claves secretas. Las variables sin `NEXT_PUBLIC_` son para el servidor. Nunca publiques `.env`.
 
-5. En **Authentication → URL Configuration**, configura `http://127.0.0.1:5173` como Site URL y añade `http://127.0.0.1:5173/**` y `http://localhost:5173/**` a Redirect URLs. Para producción, usa el dominio real en ambos campos.
+5. En **Authentication → URL Configuration**, configura `http://127.0.0.1:3000` como Site URL y añade `http://127.0.0.1:3000/**` y `http://localhost:3000/**` a Redirect URLs. Para producción, usa el dominio real en ambos campos.
 6. Habilita el proveedor de correo y contraseña. Si está activa la confirmación por correo, el usuario debe abrir el enlace recibido antes de ingresar. Configura SMTP propio antes de usar el registro por correo con tu empresa.
 7. Reinicia `npm run dev`. Regístrate, confirma el correo cuando corresponda e inicia sesión. La primera pantalla muestra **Usuarios registrados**; el menú **Inventario** abre la tabla de computadores.
 
@@ -59,19 +58,21 @@ Referencias: [perfiles y triggers](https://supabase.com/docs/guides/auth/managin
 ## Comandos
 
 ```powershell
-npm run dev    # Vite en 5173 y API en 3001
+npm run dev    # Next.js: interfaz y API en http://127.0.0.1:3000
 npm test       # Validación de datos y protección de rutas
-npm run build  # Verifica TypeScript y compila cliente/servidor
-npm start      # Sirve la aplicación compilada en http://localhost:3001
+npm run build  # Verifica TypeScript y compila Next.js
+npm run typecheck # Verifica los tipos sin compilar la aplicación
+npm start      # Sirve la aplicación compilada en http://127.0.0.1:3000
 ```
 
-La API usa el puerto 3001 por defecto. Si cambias PORT, actualiza también el proxy en `vite.config.ts` para desarrollo. `npm start` requiere primero `npm run build`. En producción, ejecuta Node detrás de un proxy HTTPS que reenvíe al puerto local. La configuración del cliente se incorpora al compilar: vuelve a ejecutar el build cuando cambies variables `VITE_`.
+La interfaz y la API se sirven desde Next.js en el puerto 3000. Para otro puerto usa `npm run dev -- --port 3002` o `npm start -- --port 3002`. `npm start` requiere primero `npm run build`. En producción, ejecuta Node detrás de un proxy HTTPS que reenvíe al puerto local. La configuración pública se incorpora al compilar: vuelve a ejecutar el build cuando cambies variables `NEXT_PUBLIC_`.
 
 ## Estructura
 
 ```text
 src/                 Interfaz, autenticación y modo demostración
-server/              API Node.js + Express
+app/                 Página, layout y API de Next.js
+app/lib/api.ts       Autenticación y respuestas de la API
 shared/schema.ts     Tipos y validación Zod compartida
 supabase/schema.sql  Base de datos y políticas de acceso
 tests/               Pruebas de validación y rutas protegidas
@@ -80,3 +81,13 @@ tests/               Pruebas de validación y rutas protegidas
 ## Verificación con tu base de datos
 
 Después de conectar Supabase, comprueba el ciclo completo: registra dos cuentas, confirma sus correos, verifica que aparezcan en Usuarios, crea un computador, asígnalo a una cuenta, cambia sus características y elimínalo tras confirmar. Prueba también un código duplicado y cerrar/iniciar sesión. Las pruebas locales no reemplazan esta verificación contra tu proyecto real.
+
+## Migración desde Vite
+
+Se tomó como referencia la estructura de [Transporte Barranquilla](https://github.com/transportegerenciabarranquilla/transporte-barranquilla): Next.js 16, App Router y rutas en `app/api/`. La interfaz de Nexo y su autenticación con Supabase se conservan.
+
+- No hay cambios en tablas, datos, triggers ni políticas RLS. **Si ya tienes la base configurada, no vuelvas a ejecutar `supabase/schema.sql`.**
+- Renombra `VITE_SUPABASE_URL` a `NEXT_PUBLIC_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY` a `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` en tu `.env` o `.env.local` y en el alojamiento. Los valores siguen siendo los mismos.
+- Conserva `SUPABASE_URL` y `SUPABASE_PUBLISHABLE_KEY` para la API.
+- Actualiza Site URL y Redirect URLs en Supabase Auth del puerto 5173 al 3000 si trabajas localmente. Esto es configuración de autenticación, no una migración de la base de datos.
+- Se eliminan Vite y el servidor Express independiente; `npm run dev` y `npm start` ejecutan Next.js. Elimina la antigua variable `PORT=3001` si quieres usar el puerto 3000.

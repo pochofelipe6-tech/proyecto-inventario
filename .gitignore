@@ -5,3 +5,8 @@ dist-server/
 .env
 .env.local
 *.log
+.next/
+out/
+*.tsbuildinfo
+.env.*
+!.env.example
